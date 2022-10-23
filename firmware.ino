@@ -69,207 +69,206 @@ unsigned int count = 1;
 bool buzzerDisable, pBuzzerDisable, buzzerDisableSen;
 
 void setup() {
-  // for Voltage Sensor
-  emon1.voltage(voltageSenPin, 255, 1.7);
-  
-  // for Test Mode
-  pinMode(testButton, INPUT);
-  pinMode(testIndi, OUTPUT);
+    // for Voltage Sensor
+    emon1.voltage(voltageSenPin, 255, 1.7);
 
-  // for Relay Switch
-  pinMode(relayPin, OUTPUT);
-  setOut(LOW);
+    // for Test Mode
+    pinMode(testButton, INPUT);
+    pinMode(testIndi, OUTPUT);
 
-  // for Buzzer
-  pinMode(buzzerPin, OUTPUT);
-  pinMode(buzzDisButtPin, INPUT);
+    // for Relay Switch
+    pinMode(relayPin, OUTPUT);
+    setOut(LOW);
 
-  // for Indicator
-  pinMode(orgLED, OUTPUT);
-  pinMode(greLED, OUTPUT);
-  pinMode(redLED, OUTPUT);
+    // for Buzzer
+    pinMode(buzzerPin, OUTPUT);
+    pinMode(buzzDisButtPin, INPUT);
 
-  // for Display
-  lcd.begin(20, 4);
-  
+    // for Indicator
+    pinMode(orgLED, OUTPUT);
+    pinMode(greLED, OUTPUT);
+    pinMode(redLED, OUTPUT);
+
+    // for Display
+    lcd.begin(20, 4);
 }
 
 void loop() {
-  checkTestMode();
-  runTimer();
-  checkBuzzDis();
-  
-  if(testMode == HIGH) {
-    sysVoltage = testVoltage;
-  } else if(testMode == LOW) {
-    sysVoltage = getVoltage();
-    sysCurrent = getCurrent();
-  }
-  
-  if(sysVoltage >= 216 && sysVoltage <= 244 && timerTime == 0) {
-    sysStatus = "Normal";
-    sysComment = "Working properly...";
-    setOut(HIGH);
-    accessBazzer("NORMAL");
-    buzzerDisable = 0;
-    accessIndi("NORMAL");
-    
-  } else if(sysVoltage < 216) {
-    setOut(LOW);
-    if(timerOn == false) {
-      OnTimer(9);
-    }
-    sysStatus = "Under";
-    sysComment = "Retry: " + String(timerTime);
-    accessBazzer("UorO");
-    accessIndi("UNDER");
-    
-  } else if(sysVoltage > 244) {
-    setOut(LOW);
-    if(timerOn == false) {
-      OnTimer(9);
-    }
-    sysStatus = "Over";
-    sysComment = "Retry: " + String(timerTime);
-    accessBazzer("UorO");
-    accessIndi("OVER");
-    
-  } else {
-    sysComment = "Retry: " + String(timerTime);
-    accessBazzer("UorO");
-  }
+    checkTestMode();
+    runTimer();
+    checkBuzzDis();
 
-  if(testMode == HIGH) {
-    displayTheData("System stat: " + sysStatus, "Voltage: " + String(sysVoltage) + "V",
+    if(testMode == HIGH) {
+        sysVoltage = testVoltage;
+    } else if(testMode == LOW) {
+        sysVoltage = getVoltage();
+        sysCurrent = getCurrent();
+    }
+
+    if(sysVoltage >= 216 && sysVoltage <= 244 && timerTime == 0) {
+        sysStatus = "Normal";
+        sysComment = "Working properly...";
+        setOut(HIGH);
+        accessBazzer("NORMAL");
+        buzzerDisable = 0;
+        accessIndi("NORMAL");
+
+    } else if(sysVoltage < 216) {
+        setOut(LOW);
+        if(timerOn == false) {
+            OnTimer(9);
+        }
+        sysStatus = "Under";
+        sysComment = "Retry: " + String(timerTime);
+        accessBazzer("UorO");
+        accessIndi("UNDER");
+
+    } else if(sysVoltage > 244) {
+        setOut(LOW);
+        if(timerOn == false) {
+            OnTimer(9);
+        }
+        sysStatus = "Over";
+        sysComment = "Retry: " + String(timerTime);
+        accessBazzer("UorO");
+        accessIndi("OVER");
+
+    } else {
+        sysComment = "Retry: " + String(timerTime);
+        accessBazzer("UorO");
+    }
+
+    if(testMode == HIGH) {
+        displayTheData("System stat: " + sysStatus, "Voltage: " + String(sysVoltage) + "V",
         "Current: ", sysComment);
-  } else {
-    displayTheData("System stat: " + sysStatus, "Voltage: " + String(sysVoltage) + "V",
-      "Current: " + String(sysCurrent) + "A", sysComment);
-  }
-  
-  delay(250);
+    } else {
+        displayTheData("System stat: " + sysStatus, "Voltage: " + String(sysVoltage) + "V",
+        "Current: " + String(sysCurrent) + "A", sysComment);
+    }
+
+    delay(250);
 }
 
 float getVoltage() {
-  emon1.calcVI(20, 2000);
-  float supplyVoltage   = emon1.Vrms;
-  return supplyVoltage;
-  
+    emon1.calcVI(20, 2000);
+    float supplyVoltage   = emon1.Vrms;
+    return supplyVoltage;
+
 }
 
 float getCurrent() {
-  float current = ACS.mA_AC();
-  current = current / 1000.0;
-  return current;
-  
+    float current = ACS.mA_AC();
+    current = current / 1000.0;
+    return current;
+
 }
 
 void runTimer() {
-  if(timeInt.update() && timerOn == true && timerTime != 0) {
-    timerTime = timerTime - 1;
-  }
-  if(timerTime == 0) {
-    timerOn = false;
-  }
+    if(timeInt.update() && timerOn == true && timerTime != 0) {
+        timerTime = timerTime - 1;
+    }
+    if(timerTime == 0) {
+        timerOn = false;
+    }
 }
 
 void OnTimer(unsigned int tim) {
-  timerTime = tim;
-  timerOn = true;
+    timerTime = tim;
+    timerOn = true;
 }
 
 void checkTestMode() {
-  if(digitalRead(testButton) == HIGH && testModeSen == 0) {
-    testMode = ! pTestMode;
-    digitalWrite(testIndi, testMode);
-    pTestMode = testMode;
-    testModeSen = 1;
-    
-  } else if(digitalRead(testButton) == LOW && testModeSen == 1) {
-    testModeSen = 0;
-    
-  }
-  testVoltage = analogRead(testPot);
-  testVoltage = map(testVoltage, 0, 1023, 202, 258);
-  delay(1);
+    if(digitalRead(testButton) == HIGH && testModeSen == 0) {
+        testMode = ! pTestMode;
+        digitalWrite(testIndi, testMode);
+        pTestMode = testMode;
+        testModeSen = 1;
+
+    } else if(digitalRead(testButton) == LOW && testModeSen == 1) {
+        testModeSen = 0;
+
+    }
+    testVoltage = analogRead(testPot);
+    testVoltage = map(testVoltage, 0, 1023, 202, 258);
+    delay(1);
 }
 
 void setOut(bool out) {
-  out = ! out;
-  digitalWrite(relayPin, out);
+    out = ! out;
+    digitalWrite(relayPin, out);
 }
 
 void accessBazzer(String string) {
-  if(normalTime.update() && string == "NORMAL" && buzzerEnable == 1) {
-    outForNormal = !outForNormal;
-    digitalWrite(buzzerPin, outForNormal);
-    buzzerEnable = outForNormal;
-    
-  } else if(UorOTime.update() && string == "UorO") {
-    if(count == 1 && buzzerDisable == 0) {
-      digitalWrite(buzzerPin, HIGH);
-      
-    } else {
-      digitalWrite(buzzerPin, LOW);
-      
+    if(normalTime.update() && string == "NORMAL" && buzzerEnable == 1) {
+        outForNormal = !outForNormal;
+        digitalWrite(buzzerPin, outForNormal);
+        buzzerEnable = outForNormal;
+
+    } else if(UorOTime.update() && string == "UorO") {
+        if(count == 1 && buzzerDisable == 0) {
+            digitalWrite(buzzerPin, HIGH);
+
+        } else {
+            digitalWrite(buzzerPin, LOW);
+
+        }
+        count++;
+        if(count == 7) count = 1;
+            buzzerEnable = 1;
+
     }
-    count++;
-    if(count == 7) count = 1;
-    buzzerEnable = 1;
-    
-  }
 }
 
 void checkBuzzDis() {
-  if(digitalRead(buzzDisButtPin) == LOW && buzzerDisableSen == 0) {
-    buzzerDisable = !pBuzzerDisable;
-    pBuzzerDisable = buzzerDisable;
-    buzzerDisableSen = 1;
-    
-  } else if(digitalRead(buzzDisButtPin) == HIGH && buzzerDisableSen == 1) {
-    buzzerDisableSen = 0;
-    
-  }
+    if(digitalRead(buzzDisButtPin) == LOW && buzzerDisableSen == 0) {
+        buzzerDisable = !pBuzzerDisable;
+        pBuzzerDisable = buzzerDisable;
+        buzzerDisableSen = 1;
+
+    } else if(digitalRead(buzzDisButtPin) == HIGH && buzzerDisableSen == 1) {
+        buzzerDisableSen = 0;
+
+    }
 }
 
 void accessIndi(String string) {
-  if(string == "UNDER") {
-    digitalWrite(orgLED, HIGH);
-    digitalWrite(greLED, LOW);
-    digitalWrite(redLED, LOW);
-    
-  } else if(string == "NORMAL") {
-    digitalWrite(orgLED, LOW);
-    digitalWrite(greLED, HIGH);
-    digitalWrite(redLED, LOW);
-    
-  } else if(string == "OVER") {
-    digitalWrite(orgLED, LOW);
-    digitalWrite(greLED, LOW);
-    digitalWrite(redLED, HIGH);
-    
-  }
+    if(string == "UNDER") {
+        digitalWrite(orgLED, HIGH);
+        digitalWrite(greLED, LOW);
+        digitalWrite(redLED, LOW);
+
+    } else if(string == "NORMAL") {
+        digitalWrite(orgLED, LOW);
+        digitalWrite(greLED, HIGH);
+        digitalWrite(redLED, LOW);
+
+    } else if(string == "OVER") {
+        digitalWrite(orgLED, LOW);
+        digitalWrite(greLED, LOW);
+        digitalWrite(redLED, HIGH);
+
+    }
 }
 
 void displayTheData(String firstLine, String secondLine, String thiedLine, String fouthLine) {
-  // lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(fillString(firstLine));
-  lcd.setCursor(0, 1);
-  lcd.print(fillString(secondLine));
-  lcd.setCursor(0, 2);
-  lcd.print(fillString(thiedLine));
-  lcd.setCursor(0, 3);
-  lcd.print(fillString(fouthLine));
+    // lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(fillString(firstLine));
+    lcd.setCursor(0, 1);
+    lcd.print(fillString(secondLine));
+    lcd.setCursor(0, 2);
+    lcd.print(fillString(thiedLine));
+    lcd.setCursor(0, 3);
+    lcd.print(fillString(fouthLine));
 }
 
 String fillString(String string) {
-  unsigned int lengt;
-  lengt = string.length();
-  lengt = 20 - lengt;
-  for(int i = 1; i < lengt; i++) {
-    string = string + " ";
-  }
-  return string;
-  
+    unsigned int lengt;
+    lengt = string.length();
+    lengt = 20 - lengt;
+    for(int i = 1; i < lengt; i++) {
+        string = string + " ";
+    }
+    return string;
+
 }
