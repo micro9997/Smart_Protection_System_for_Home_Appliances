@@ -1,43 +1,4 @@
-# Smart_Protection_System_for_Home_Appliances
-Under and over voltage smart protection system for home appliances.
 
-&nbsp;
-
-### Block diagram
-
-![image_1](https://github.com/micro9997/Smart_Protection_System_for_Home_Appliances/blob/master/images/image_1.jpg)
-
-&nbsp;
-
-### Testing
-
-![image_2](https://github.com/micro9997/Smart_Protection_System_for_Home_Appliances/blob/master/images/image_2.jpg)
-
-&nbsp;
-
-### Testing in normal voltage 
-
-![image_3](https://github.com/micro9997/Smart_Protection_System_for_Home_Appliances/blob/master/images/image_3.jpg)
-
-&nbsp;
-
-### Testing Under voltage
-
-![image_4](https://github.com/micro9997/Smart_Protection_System_for_Home_Appliances/blob/master/images/image_4.jpg)
-
-&nbsp;
-
-### Testing Over voltage
-
-![image_5](https://github.com/micro9997/Smart_Protection_System_for_Home_Appliances/blob/master/images/image_5.jpg)
-
-&nbsp;
-
-firmware.ino
-
-<!-- &nbsp; -->
-
-```c
 //for Voltage Sensor
 #include "EmonLib.h"
 
@@ -311,6 +272,3 @@ String fillString(String string) {
     return string;
 
 }
-```
-
-&nbsp;
